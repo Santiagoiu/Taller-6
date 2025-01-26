@@ -1,0 +1,63 @@
+import sympy
+import random
+
+# Función para encontrar las raíces primitivas de un número primo q
+def find_primitive_roots(q):
+    """Encuentra las raíces primitivas de un número primo q."""
+    roots = []
+    for alpha in range(2, q):
+        if sympy.is_primitive_root(alpha, q):
+            roots.append(alpha)
+    return roots
+
+# Función para realizar el intercambio de claves Diffie-Hellman
+def diffie_hellman(q, alpha, private_key_ana, private_key_bob):
+    """Realiza el intercambio de claves Diffie-Hellman con claves privadas dadas."""
+    # Se calculan las claves públicas
+    public_key_ana = pow(alpha, private_key_ana, q)
+    public_key_bob = pow(alpha, private_key_bob, q)
+    
+    # El atacante intercepta y sustituye las claves públicas
+    attacker_public_key_ana = pow(alpha, random.randint(2, q - 2), q)  # Clave pública atacante para Ana
+    attacker_public_key_bob = pow(alpha, random.randint(2, q - 2), q)  # Clave pública atacante para Bob
+    
+    # El atacante intercambia las claves públicas entre Ana y Bob
+    print(f"Claves públicas interceptadas: \nClaves públicas de Ana: {attacker_public_key_ana} (enviadas a Bob)")
+    print(f"Claves públicas de Bob: {attacker_public_key_bob} (enviadas a Ana)")
+
+    # Ana y Bob calculan sus claves compartidas con las claves falsas
+    shared_key_ana = pow(attacker_public_key_bob, private_key_ana, q)
+    shared_key_bob = pow(attacker_public_key_ana, private_key_bob, q)
+    
+    # Verificar que ambas claves compartidas sean iguales
+    assert shared_key_ana == shared_key_bob, "Las claves compartidas no son iguales!"
+    
+    return public_key_ana, public_key_bob, shared_key_ana
+
+# Parámetro primo q
+q = 65537
+
+# Buscar raíces primitivas de q
+roots = find_primitive_roots(q)
+
+# Mostrar al menos 10 raíces primitivas
+print("Primeras 10 raíces primitivas de q =", q, "son:")
+print(roots[:10])
+
+# Usar una raíz primitiva para el algoritmo Diffie-Hellman (usamos la primera raíz)
+alpha = roots[0]  # Usar la primera raíz primitiva encontrada
+
+# Ana y Bob eligen sus claves privadas
+private_key_ana = random.randint(2, q - 2)  # Ana elige su clave privada
+private_key_bob = random.randint(2, q - 2)  # Bob elige su clave privada
+
+# Realizar el intercambio de claves Diffie-Hellman con el ataque MITM
+public_key_ana, public_key_bob, shared_key = diffie_hellman(q, alpha, private_key_ana, private_key_bob)
+
+# Mostrar los resultados
+print("\n--- Resultados del intercambio de claves Diffie-Hellman con ataque MITM ---")
+print("Clave privada de Ana:", private_key_ana)
+print("Clave pública de Ana (interceptada):", public_key_ana)
+print("Clave privada de Bob:", private_key_bob)
+print("Clave pública de Bob (interceptada):", public_key_bob)
+print("Clave compartida (accedida por el atacante):", shared_key)
