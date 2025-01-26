@@ -1,0 +1,24 @@
+import random
+
+# Función para calcular la raíz primitiva
+def find_primitive_root(q):
+    for i in range(2, q):
+        if pow(i, (q - 1) // 2, q) != 1:
+            return i
+    return None
+
+# Parámetros
+q = 4294967311
+alpha = find_primitive_root(q)
+x_ana = random.randint(1, q-1)  # Clave privada de Ana
+y_ana = pow(alpha, x_ana, q)  # Clave pública de Ana
+
+x_bob = random.randint(1, q-1)  # Clave privada de Bob
+y_bob = pow(alpha, x_bob, q)  # Clave pública de Bob
+
+# Cálculo de las claves compartidas
+K_ana = pow(y_bob, x_ana, q)
+K_bob = pow(y_ana, x_bob, q)
+
+print(f"Clave compartida de Ana: {K_ana}")
+print(f"Clave compartida de Bob: {K_bob}")
